@@ -1,6 +1,8 @@
 package com.labs1904
 
 import scala.collection.immutable.HashMap
+import scala.io.Source
+import java.io.{BufferedWriter, File, FileWriter}
 
 /**
  * An ingredient has an amount and a description.
@@ -56,7 +58,15 @@ object SecretRecipeDecoder {
    */
   def decodeString(str: String): String = {
     // todo: implement me
-    "1 cup"
+    str.flatMap(chr => {
+      chr match {
+        case '-' => "-"
+        case '/' => "/"
+        case ',' => ","
+        case ' ' => " "
+        case _ => ENCODING(chr.toString)
+      }
+    })
   }
 
   /**
@@ -66,7 +76,15 @@ object SecretRecipeDecoder {
    */
   def decodeIngredient(line: String): Ingredient = {
     // todo: implement me
-    Ingredient("1 cup", "butter")
+    val lineSplit = line.split("#")
+
+    val amt: String = lineSplit(0)
+    val ing: String = lineSplit(1)
+
+    val amount = decodeString(amt)
+    val ingredient = decodeString(ing)
+
+    Ingredient(amount, ingredient)
   }
 
   /**
@@ -75,5 +93,16 @@ object SecretRecipeDecoder {
    */
   def main(args: Array[String]): Unit = {
     // TODO: implement me
+    val filename = "/Users/alvin/Documents/de-hours-with-experts/scala/src/main/resources/secret_recipe.txt"
+    val lines = Source.fromFile(filename).getLines.toList
+
+    val file = new File("/Users/alvin/Documents/de-hours-with-experts/scala/src/main/resources/decoded_recipe.txt")
+    val bw = new BufferedWriter(new FileWriter(file))
+
+    lines.foreach(str => {
+      val i = decodeIngredient(str)
+      bw.write(i.amount + " " + i.description + '\n')
+    })
+    bw.close()
   }
 }
